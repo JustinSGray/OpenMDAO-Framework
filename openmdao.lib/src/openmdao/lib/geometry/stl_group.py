@@ -56,6 +56,7 @@ class STLGroup(object):
                 comp.deform(delta_C)
             else:
                 comp.deform(*delta_C)
+            self.list_parameters()        
 
     def _build_ascii_stl(self, facets): 
         """returns a list of ascii lines for the stl file """
@@ -81,41 +82,6 @@ class STLGroup(object):
             return 
         self.list_parameters() #makes up to date param_loc_map
 
-        points = []
-        triangles = []
-        i_offset = 0
-        offsets = []
-        n_controls = 0
-        deriv_offsets = []
-        for comp in self._comps:
-            offsets.append(i_offset)
-            deriv_offsets.append(n_controls)
-            n_controls += sum(self.comp_param_count[comp])
-
-            if isinstance(comp,Body): 
-                points.extend(comp.stl.points)
-                size = len(points)
-                triangles.extend(comp.stl.triangles + i_offset) 
-                i_offset = size
-                #X and R for each control point, except the first X and the last R (hence the -1)
-            else: 
-                points.extend(comp.outer_stl.points)
-                size = len(points)
-                triangles.extend(comp.outer_stl.triangles + i_offset) 
-                i_offset = size
-                
-                points.extend(comp.inner_stl.points)
-                size = len(points)
-                triangles.extend(comp.inner_stl.triangles + i_offset) 
-                i_offset = size
-
-        self.points = points
-        self.n_controls = n_controls
-        self.n_points = len(points)
-        self.triangles = triangles
-        self.n_triangles = len(triangles)
-        self.offsets = offsets
-        self.deriv_offsets = deriv_offsets
 
         i_comp = 0 #keep track of which comp the points came from
         comp = self._comps[0]
@@ -295,7 +261,7 @@ class STLGroup(object):
                 indecies = np.logical_and(abs(p[:,2])<.0001,p[:,1]>0)
                 points = p[indecies]
                 points = points[points[:,0].argsort()]
-                point_ses.append(points)
+                point_sets.append(points)
 
                 p = comp.inner_stl.points
                 indecies = np.logical_and(abs(p[:,2])<.0001,p[:,1]>0)
@@ -347,6 +313,8 @@ class STLGroup(object):
     #begin methods for IParametricGeometry
     def list_parameters(self): 
         """ returns a dictionary of parameters sets key'd to component names"""
+
+        
 
         self.param_name_map = {}
         self.param_loc_map = {} #locate columns of jacobian related to a specific parameter
@@ -411,7 +379,46 @@ class STLGroup(object):
                 self.comp_param_count[comp] = (n_X,n_R,n_T)
                 self.i_J += n_T
 
+        #do some point book keeping here
+        points = []
+        triangles = []
+        i_offset = 0
+        offsets = []
+        n_controls = 0
+        deriv_offsets = []
+        for comp in self._comps:
+            offsets.append(i_offset)
+            deriv_offsets.append(n_controls)
+            n_controls += sum(self.comp_param_count[comp])
 
+            if isinstance(comp,Body): 
+                points.extend(comp.stl.points)
+                size = len(points)
+                triangles.extend(comp.stl.triangles + i_offset) 
+                i_offset = size
+                #X and R for each control point, except the first X and the last R (hence the -1)
+            else: 
+                points.extend(comp.outer_stl.points)
+                size = len(points)
+                triangles.extend(comp.outer_stl.triangles + i_offset) 
+                i_offset = size
+                
+                points.extend(comp.inner_stl.points)
+                size = len(points)
+                triangles.extend(comp.inner_stl.triangles + i_offset) 
+                i_offset = size
+
+        self.points = np.array(points)
+        self.n_controls = n_controls
+        self.n_points = len(points)
+        self.triangles = triangles
+        self.n_triangles = len(triangles)
+        self.offsets = offsets
+        self.deriv_offsets = deriv_offsets
+
+        params.append(
+            ('geom_out', {'iotype':'out', 'data_shape':self.points.shape, 'type':IStaticGeometry})
+        )
         return params
 
     def set_parameter(self, name, val): 
