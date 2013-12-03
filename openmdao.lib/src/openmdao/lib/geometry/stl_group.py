@@ -549,7 +549,7 @@ class STLGroup(object):
                 delta_Cc_shape = comp.delta_Cc.shape
                 del_Cc = np.zeros( delta_Cc_shape )
                 del_Cc[1:,0] = self.param_name_map[ '%s.X' % comp.name ]
-                del_Cc[:-1,1] = self.param_name_map[ '%s.R' % comp.name ]
+                del_Cc[:,1] = self.param_name_map[ '%s.R' % comp.name ]
 
                 delta_Ct_shape = comp.delta_Ct.shape
                 del_Ct = np.zeros( delta_Ct_shape )
