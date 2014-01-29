@@ -528,15 +528,10 @@ class TestDerivativeVarTree(unittest.TestCase):
 
         J_forward = top.driver.workflow.calc_gradient(mode='forward')
         top.driver.workflow.config_changed()
-        J_fd = top.driver.workflow.calc_gradient(mode='forward')
+        J_fd = top.driver.workflow.calc_gradient(mode='fd')
 
         assert_rel_error(self, linalg.norm(J_forward - J_fd), 0, .00001)
 
-
-        # self.top.driver.remove_constraint('dis1.outs.x1 < 24.0')
-        # self.top.driver.add_constraint('dis2.ins.x2 < 5')
-        # self.top.driver.remove_parameter('dis1.x')
-        # self.top.driver.add_parameter('dis1.ins.x2', low=-10.0, high=10.0)
 
 
        
