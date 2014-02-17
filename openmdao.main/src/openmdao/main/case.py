@@ -87,7 +87,10 @@ class Case(object):
             self.uuid = str(case_uuid)
         else:
             self.uuid = str(uuid1())  # unique identifier
-        self.parent_uuid = str(parent_uuid)  # identifier of parent case, if any
+        if parent_uuid: 
+            self.parent_uuid = str(parent_uuid)  # identifier of parent case, if any
+        else: 
+            self.parent_uuid = None
 
         self.timestamp = time.time()
 

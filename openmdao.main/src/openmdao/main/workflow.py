@@ -84,7 +84,7 @@ class Workflow(object):
         """ Reset execution count. """
         self._exec_count = self._initial_count
 
-    def run(self, ffd_order=0, case_id=''):
+    def run(self, ffd_order=0, case_id='', parent_case_uuid=None):
         """ Run the Components in this Workflow. """
 
         self._stop = False
@@ -99,6 +99,7 @@ class Workflow(object):
             else:
                 self._comp_count += 1
                 comp.set_itername('%s-%d' % (iterbase, self._comp_count))
+                comp.parent_case_uuid = parent_case_uuid
                 comp.run(ffd_order=ffd_order, case_id=case_id)
             if self._stop:
                 raise RunStopped('Stop requested')
